@@ -44,6 +44,12 @@
             <artifactId>micrometer-registry-prometheus</artifactId>
             <version>1.16.0</version>
         </dependency>
+        <!-- for json logs -->
+        <dependency>
+            <groupId>net.logstash.logback</groupId>
+            <artifactId>logstash-logback-encoder</artifactId>
+            <version>9.0</version>
+        </dependency>
 
         <dependency>
             <groupId>org.projectlombok</groupId>

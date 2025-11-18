@@ -1,0 +1,24 @@
+// 1. Find log files
+local.file_match "spring_logs" {
+  path_targets = [{"__path__" = "/var/log/app/*.log"}]
+  sync_period = "5s"
+}
+
+// 2. Read logs from files
+loki.source.file "spring_log_scrape" {
+  targets       = local.file_match.spring_logs.targets
+  forward_to    = [loki.process.spring_pipeline.receiver]
+  tail_from_end = true
+}
+
+// 3. Just passing through pipeline - drop/parse/enrich can be added later
+loki.process "spring_pipeline" {
+  forward_to = [loki.write.local.receiver]
+}
+
+// 4. Writing logs to Loki
+loki.write "local" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}

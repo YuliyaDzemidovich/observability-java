@@ -5,3 +5,34 @@ services:
       - "9090:9090"
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+  loki:
+    image: grafana/loki:3.5.7
+    command: -config.file=/etc/loki/local-config.yaml
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./loki/loki-config.yaml:/etc/loki/local-config.yaml
+
+  alloy:
+    image: grafana/alloy:latest
+    command: >
+      run --server.http.listen-addr=0.0.0.0:12345
+          --storage.path=/var/lib/alloy
+          /etc/alloy/config.alloy
+    ports:
+      - "12345:12345"
+    volumes:
+      - ./alloy/alloy-config.alloy:/etc/alloy/config.alloy
+      - ./logs:/var/log/app
+    depends_on:
+      - loki
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    depends_on:
+      - loki
+      - prometheus
