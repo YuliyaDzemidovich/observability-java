@@ -1,3 +1,4 @@
+// Logs config
 // 1. Find log files
 local.file_match "spring_logs" {
   path_targets = [{"__path__" = "/var/log/app/*.log"}]
@@ -20,5 +21,36 @@ loki.process "spring_pipeline" {
 loki.write "local" {
   endpoint {
     url = "http://loki:3100/loki/api/v1/push"
+  }
+}
+
+// Traces config
+// 1. OTLP receiver - receives traces from the app
+otelcol.receiver.otlp "default" {
+  http {
+    endpoint = "0.0.0.0:4318"
+  }
+
+  output {
+    traces = [otelcol.processor.batch.traces.input]
+  }
+}
+
+// 2. batching – good practice
+otelcol.processor.batch "traces" {
+  output {
+    traces = [otelcol.exporter.otlp.tempo.input]
+  }
+}
+
+// 3. exporter to Tempo
+otelcol.exporter.otlp "tempo" {
+  client {
+    endpoint = "http://tempo:4317"
+
+    tls {
+      insecure             = true
+      insecure_skip_verify = true
+    }
   }
 }

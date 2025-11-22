@@ -12,7 +12,6 @@ services:
       - "3100:3100"
     volumes:
       - ./loki/loki-config.yaml:/etc/loki/local-config.yaml
-
   alloy:
     image: grafana/alloy:latest
     command: >
@@ -20,7 +19,9 @@ services:
           --storage.path=/var/lib/alloy
           /etc/alloy/config.alloy
     ports:
-      - "12345:12345"
+      - "12345:12345"    # HTTP UI/metrics
+      - "4317:4317"      # OTLP gRPC
+      - "4318:4318"      # OTLP HTTP
     volumes:
       - ./alloy/alloy-config.alloy:/etc/alloy/config.alloy
       - ./logs:/var/log/app
@@ -30,9 +31,19 @@ services:
     image: grafana/grafana:latest
     ports:
       - "3000:3000"
+    volumes:
+      - ./grafana-data:/var/lib/grafana
     environment:
       GF_SECURITY_ADMIN_USER: admin
       GF_SECURITY_ADMIN_PASSWORD: admin
     depends_on:
       - loki
       - prometheus
+  tempo:
+    image: grafana/tempo:latest
+    command: [ "-config.file=/etc/tempo/tempo.yaml" ]
+    volumes:
+      - ./tempo/tempo.yaml:/etc/tempo/tempo.yaml
+      - ./tempo/data:/var/tempo
+    ports:
+      - "3200:3200"   # HTTP API for Grafana
