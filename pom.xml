@@ -56,6 +56,12 @@
             <artifactId>opentelemetry-api</artifactId>
             <version>1.56.0</version>
         </dependency>
+        <!-- for @WithSpan to work - faking multiple spans in one trace for demo -->
+        <dependency>
+            <groupId>io.opentelemetry.instrumentation</groupId>
+            <artifactId>opentelemetry-instrumentation-annotations</artifactId>
+            <version>2.22.0</version>
+        </dependency>
 
         <dependency>
             <groupId>org.projectlombok</groupId>
