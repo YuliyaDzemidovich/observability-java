@@ -8,12 +8,18 @@ local.file_match "spring_logs" {
 // 2. Read logs from files
 loki.source.file "spring_log_scrape" {
   targets       = local.file_match.spring_logs.targets
-  forward_to    = [loki.process.spring_pipeline.receiver]
+  forward_to    = [loki.process.add_labels.receiver]
   tail_from_end = true
 }
 
-// 3. Just passing through pipeline - drop/parse/enrich can be added later
-loki.process "spring_pipeline" {
+// 3. Transformation: pull some data out of the log message, and turn it into a label
+loki.process "add_labels" {
+  stage.static_labels {
+    values = {
+      service_name = "observability-app",
+    }
+  }
+
   forward_to = [loki.write.local.receiver]
 }
 
